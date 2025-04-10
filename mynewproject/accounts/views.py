@@ -1,12 +1,18 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from .models import CustomUser
+from .models import CustomUser,ProfilePost
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
+from django.template.loader import get_template
+from django.template import TemplateDoesNotExist
+
 def home(request):
-    return HttpResponse("Welcome to the homepage!")
+    return render(request, 'accounts/home.html')
+
+
+
 # Register View
 def register_view(request):
     if request.method == 'POST':
@@ -55,6 +61,25 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
 @login_required
 def dashboard_view(request):
-    return render(request, 'accounts/dashboard.html')
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        if title and content:
+            ProfilePost.objects.create(user=request.user, title=title, content=content)
+        return redirect('dashboard')
+
+    posts = ProfilePost.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'accounts/dashboard.html', {'posts': posts})
+
+
+
+# def create_post(request):
+#     if request.method == 'POST' and request.user.is_authenticated:
+#         content = request.POST.get('content')
+#         if content:
+#             ProfilePost.objects.create(user=request.user, content=content)
+#         return redirect('dashboard')
+#     return redirect('dashboard')

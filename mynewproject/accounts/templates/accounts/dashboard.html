@@ -1,27 +1,53 @@
-<h2>Welcome, {{ request.user.username }} 👋</h2>
-<p><strong>Email:</strong> {{ request.user.email }}</p>
-<p><strong>Phone:</strong> {{ request.user.phone }}</p>
-<p><strong>Bio:</strong> {{ request.user.bio }}</p>
-
-<a href="{% url 'logout' %}" style="color: red; text-decoration: none;">Logout</a>
-
-<hr>
-
-<h3>Create a Post 📝</h3>
-<form method="post" style="margin-bottom: 20px;">
-    {% csrf_token %}
-    <input type="text" name="title" placeholder="Post Title" style="width: 100%; padding: 8px; margin-bottom: 10px;"><br>
-    <textarea name="content" rows="4" cols="50" placeholder="Write your post here..." style="width: 100%; padding: 8px;"></textarea><br>
-    <button type="submit" style="padding: 10px 15px; margin-top: 10px;">Submit Post</button>
-</form>
-
-<h2>Your Posts 📜</h2>
-{% for post in posts %}
-    <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-        <h3>{{ post.title }}</h3>
-        <p>{{ post.content }}</p>
-        <small style="color: gray;">Posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small>
+<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <h2 style="color: #333; text-align: center;">Welcome, {{ request.user.username }} 👋</h2>
+    <div style="margin-bottom: 20px; text-align: center;">
+        <p><strong>Email:</strong> {{ request.user.email }}</p>
+        <p><strong>Phone:</strong> {{ request.user.phone }}</p>
+        <p><strong>Bio:</strong> {{ request.user.bio }}</p>
     </div>
-{% empty %}
-    <p>You haven't posted anything yet.</p>
-{% endfor %}
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="{% url 'logout' %}" style="color: white; background-color: #dc3545; padding: 10px 15px; border-radius: 5px; text-decoration: none; margin-right: 15px;">🚪 Logout</a>
+        <a href="{% url 'global_feed' %}" style="color: white; background-color: #007bff; padding: 10px 15px; border-radius: 5px; text-decoration: none;">🌍 Go to Global Feed</a>
+    </div>
+
+    <hr style="border: 1px solid #ddd; margin: 20px 0;">
+
+    <h3 style="color: #333; text-align: center;">Create a Post 📝</h3>
+    <form method="post" style="margin-bottom: 20px; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+        {% csrf_token %}
+        <input type="text" name="title" placeholder="Post Title" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px;"><br>
+        <textarea name="content" rows="4" cols="50" placeholder="Write your post here..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea><br>
+        <button type="submit" style="background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Submit Post</button>
+    </form>
+
+    <hr style="border: 1px solid #ddd; margin: 20px 0;">
+
+    <h2 style="color: #333; text-align: center;">Your Posts 📜</h2>
+
+    {% for post in posts %}
+        <div style="background-color: #fff; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+            <h3 style="color: #007bff;">{{ post.title }}</h3>
+            <p style="color: #555;">{{ post.content }}</p>
+            <small style="color: gray;">Posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small><br><br>
+
+            <a href="{% url 'edit_post' post.id %}" style="color: #007bff; text-decoration: none; margin-right: 10px;">✏️ Edit</a>
+            <a href="{% url 'delete_post' post.id %}" style="color: #dc3545; text-decoration: none;">🗑️ Delete</a>
+
+            {% if post.comments.all %}
+                <hr style="border: 1px solid #ddd; margin: 15px 0;">
+                <h4 style="color: #333;">💬 Comments on this post:</h4>
+                {% for comment in post.comments.all %}
+                    <div style="margin-left: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px; margin-bottom: 10px;">
+                        <p style="margin: 0;"><strong>{{ comment.user.username }}</strong>: {{ comment.content }}</p>
+                        <small style="color: gray;">{{ comment.created_at|date:"F j, Y, g:i a" }}</small>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: gray; margin-top: 10px;">No comments yet.</p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p style="text-align: center; color: gray;">You haven't posted anything yet.</p>
+    {% endfor %}
+</div>

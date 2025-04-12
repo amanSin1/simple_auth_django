@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-
+from django.conf import settings
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
@@ -46,4 +46,13 @@ class ProfilePost(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.user.email}"
+    
+class Comment(models.Model):
+    post = models.ForeignKey(ProfilePost, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.post.user.username}'s post: {self.post.title}"
 

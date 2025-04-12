@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from .models import CustomUser,ProfilePost
+from .models import CustomUser,ProfilePost,Comment
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist
+from django.shortcuts import get_object_or_404
+from .forms import CommentForm
 
 def home(request):
     return render(request, 'accounts/home.html')
@@ -60,7 +62,7 @@ def login_view(request):
 # Logout View
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('home')
 
 @login_required
 def dashboard_view(request):
@@ -74,12 +76,71 @@ def dashboard_view(request):
     posts = ProfilePost.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'accounts/dashboard.html', {'posts': posts})
 
+@login_required
+def edit_post_view(request, post_id):
+    post = get_object_or_404(ProfilePost, id=post_id, user=request.user)
+
+    if request.method == 'POST':
+        post.title = request.POST.get('title')
+        post.content = request.POST.get('content')
+        post.save()
+        return redirect('dashboard')
+
+    return render(request, 'accounts/edit_post.html', {'post': post})
 
 
-# def create_post(request):
-#     if request.method == 'POST' and request.user.is_authenticated:
-#         content = request.POST.get('content')
-#         if content:
-#             ProfilePost.objects.create(user=request.user, content=content)
-#         return redirect('dashboard')
-#     return redirect('dashboard')
+def delete_post_view(request, post_id):
+    post = get_object_or_404(ProfilePost, id = post_id, user = request.user)
+    if request.method == 'POST':
+        post.delete()
+        return redirect('dashboard')
+    return render(request, 'accounts/confirm_delete.html', {'post' : post})
+
+def global_feed_view(request):
+    posts = ProfilePost.objects.exclude(user=request.user).order_by('-created_at')
+    return render(request, 'accounts/feed.html', {'posts': posts})
+
+
+def post_detail_view(request, post_id):
+    post = get_object_or_404(ProfilePost, id=post_id)
+    comments = post.comments.all()
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.post = post
+            comment.save()
+            return redirect('post_detail', post_id=post.id)
+    else:
+        form = CommentForm()
+
+    return render(request, 'accounts/post_detail.html', {
+        'post': post,
+        'comments': comments,
+        'form': form
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

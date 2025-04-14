@@ -1,0 +1,10 @@
+<h2>Edit Post ✍️</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="title" value="{{ post.title }}" style="width: 100%; padding: 8px; margin-bottom: 10px;"><br>
+    <textarea name="content" rows="4" cols="50" style="width: 100%; padding: 8px;">{{ post.content }}</textarea><br>
+    <button type="submit" style="padding: 10px 15px; margin-top: 10px;">Update Post</button>
+</form>
+
+<a href="{% url 'dashboard' %}" style="display: inline-block; margin-top: 15px;">← Back to Dashboard</a>
